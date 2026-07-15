@@ -111,20 +111,22 @@ class FcmMobileDeviceRegistration extends _$FcmMobileDeviceRegistration {
   Future<void> _syncImpl() async {
     final String? bearer = ref.read(fluxerAuthTokenProvider);
     if (bearer == null || bearer.isEmpty) {
+      debugPrint('[FcmMobileDeviceRegistration] sync() skipped: no bearer token');
       return;
     }
     if (!ref.read(authStateProvider)) {
+      debugPrint('[FcmMobileDeviceRegistration] sync() skipped: not authenticated');
       return;
     }
     final String? userId = ref.read(currentUserIdProvider);
     if (userId == null || userId.isEmpty) {
+      debugPrint('[FcmMobileDeviceRegistration] sync() skipped: no user id');
       return;
     }
+    debugPrint('[FcmMobileDeviceRegistration] sync() proceeding for user $userId');
     final bool granted = await requestPushNotificationPermission();
     if (!granted) {
-      if (kDebugMode) {
-        debugPrint('[FcmMobileDeviceRegistration] notifications not granted');
-      }
+      debugPrint('[FcmMobileDeviceRegistration] notifications not granted');
       return;
     }
     final PushService push = ref.read(pushServiceProvider);
@@ -155,6 +157,7 @@ class FcmMobileDeviceRegistration extends _$FcmMobileDeviceRegistration {
       lastRegisteredUserId: _lastRegisteredUserId,
       lastRegisteredToken: _lastRegisteredToken,
     )) {
+      debugPrint('[FcmMobileDeviceRegistration] skipping registration (already registered for this user/token)');
       return;
     }
     try {
@@ -172,15 +175,11 @@ class FcmMobileDeviceRegistration extends _$FcmMobileDeviceRegistration {
           );
       _lastRegisteredUserId = userId;
       _lastRegisteredToken = token;
-      if (kDebugMode) {
-        debugPrint(
-          '[FcmMobileDeviceRegistration] registered token for user $userId',
-        );
-      }
+      debugPrint(
+        '[FcmMobileDeviceRegistration] registered token for user $userId',
+      );
     } on DioException catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[FcmMobileDeviceRegistration] register failed: $e\n$st');
-      }
+      debugPrint('[FcmMobileDeviceRegistration] register failed: $e\n$st');
     }
   }
 
@@ -215,9 +214,7 @@ class FcmMobileDeviceRegistration extends _$FcmMobileDeviceRegistration {
       _lastRegisteredUserId = null;
       _lastRegisteredToken = null;
     } on DioException catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[FcmMobileDeviceRegistration] unregister failed: $e\n$st');
-      }
+      debugPrint('[FcmMobileDeviceRegistration] unregister failed: $e\n$st');
     }
   }
 }
