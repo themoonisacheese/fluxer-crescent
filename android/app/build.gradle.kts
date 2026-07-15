@@ -71,7 +71,8 @@ android {
     productFlavors {
         create("canary") {
             dimension = "environment"
-            applicationIdSuffix = ".canary"
+            applicationId = "website.poggers.chat"
+            applicationIdSuffix = ""
             versionNameSuffix = "-canary"
             manifestPlaceholders["appLabel"] = "Fluxer Canary"
             manifestPlaceholders["buildEnvironment"] = "canary"

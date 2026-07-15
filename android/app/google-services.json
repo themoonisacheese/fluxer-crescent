@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "548346576791",
+    "project_id": "fluxer-crescent",
+    "storage_bucket": "fluxer-crescent.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548346576791:android:28333e2667303dd7f70ed2",
+        "android_client_info": {
+          "package_name": "com.fluxer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ijvuQU2oZtjkqtwJTyzB1RRrxA5ZV5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548346576791:android:28333e2667303dd7f70ed2",
+        "android_client_info": {
+          "package_name": "website.poggers.chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ijvuQU2oZtjkqtwJTyzB1RRrxA5ZV5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548346576791:android:28333e2667303dd7f70ed2",
+        "android_client_info": {
+          "package_name": "com.fluxer.canary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ijvuQU2oZtjkqtwJTyzB1RRrxA5ZV5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
