@@ -50,6 +50,43 @@ jobs:
       - name: Merge Firebase dependencies
         run: dart run tool/merge_firebase_deps.dart
 
+      - name: Create placeholder google-services.json
+        run: |
+          cat > android/app/google-services.json << 'JSON'
+          {
+            "project_info": {
+              "project_number": "0",
+              "project_id": "fluxer-canary-placeholder",
+              "storage_bucket": "fluxer-canary-placeholder.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:0:android:placeholder",
+                  "android_client_info": {
+                    "package_name": "com.fluxer.canary"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyPlaceholder00000000000000000000000000"
+                  }
+                ],
+                "services": {
+                  "analytics_service": {
+                    "status": 1
+                  },
+                  "cloud_messaging_service": {
+                    "status": 2
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          JSON
+
       - name: Create placeholder firebase_options.dart
         run: |
           mkdir -p packages/fluxer_fcm/lib
