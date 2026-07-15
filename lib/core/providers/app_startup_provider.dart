@@ -83,8 +83,8 @@ class AppStartup extends _$AppStartup {
     // real androidFcm credentials arrive (the first response may be stale).
     if (PushProviderGuard.isFirebaseMessaging && Platform.isAndroid) {
       ref.listen(wellKnownProvider, (previous, next) {
-        final prevFcm = previous?.valueOrNull?.push.androidFcm;
-        final nextFcm = next.valueOrNull?.push.androidFcm;
+        final prevFcm = previous?.value?.push.androidFcm;
+        final nextFcm = next.value?.push.androidFcm;
         if (prevFcm == null && nextFcm != null) {
           debugPrint('[AppStartup] well-known refreshed with FCM credentials, re-triggering bootstrap');
           unawaited(_bootstrapFcmWithDynamicCredentials());
