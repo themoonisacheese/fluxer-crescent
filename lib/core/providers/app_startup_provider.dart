@@ -77,7 +77,7 @@ class AppStartup extends _$AppStartup {
     unawaited(EmojiRegistry.preload());
     unawaited(ref.read(wellKnownProvider.future));
     unawaited(EmojiSpriteSheet.preload());
-    unawaited(_bootstrapFcmWithDynamicCredentials());
+    await _bootstrapFcmWithDynamicCredentials();
     final database = ref.read(fluxerDatabaseProvider);
     final authRepository = ref.read(authRepositoryProvider);
     debugPrint('[AppStartup] Database obtained, migrating legacy tokens…');

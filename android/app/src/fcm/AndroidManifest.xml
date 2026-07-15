@@ -1,6 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <application>
+        <!-- Prevent FirebaseInitProvider from auto-initializing Firebase with
+             build-time google-services.json credentials before Dart code runs.
+             This is critical for dynamic FCM: without this removal, Firebase is
+             already initialized by the time our Dart bootstrap executes, so
+             Firebase.apps.isEmpty is false and the server-provided
+             FirebaseOptions (with the correct messagingSenderId for this
+             instance's Firebase project) are silently skipped. By removing the
+             provider, Firebase only initializes when our Dart code explicitly
+             calls Firebase.initializeApp with the dynamic credentials fetched
+             from the server's well-known endpoint. The google-services.json
+             file still satisfies the Gradle plugin (build succeeds) but its
+             values are never used at runtime. -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            tools:node="remove" />
         <meta-data
             android:name="com.fluxer.PUSH_PROVIDER_FLAVOR"
             android:value="fcm" />

@@ -86,6 +86,12 @@ class FluxerFcmPushService {
     if (_initialized) {
       return;
     }
+    // If dynamic options are provided but Firebase was already initialized
+    // (e.g. by FirebaseInitProvider or a previous call), reinitialize with the
+    // server's credentials so the correct messagingSenderId is used.
+    if (firebaseOptions != null && Firebase.apps.isNotEmpty) {
+      await Firebase.app().delete();
+    }
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(options: firebaseOptions);
     }
