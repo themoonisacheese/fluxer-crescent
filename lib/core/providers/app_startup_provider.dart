@@ -14,8 +14,11 @@ import 'package:fluxer_app/core/providers/database_provider.dart';
 import 'package:fluxer_app/core/providers/fluxer_sfx_provider.dart';
 import 'package:fluxer_app/core/providers/gateway_provider.dart';
 import 'package:fluxer_app/core/providers/well_known_provider.dart';
+import 'package:fluxer_dart/export.dart';
 import 'package:fluxer_app/core/push/apns/apns_mobile_device_registration.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:fluxer_app/core/push/fcm/fcm_entrypoint.dart';
+import 'package:fluxer_app/core/push/fcm/fcm_credentials_cache.dart';
 import 'package:fluxer_app/core/push/fcm/fcm_mobile_device_registration.dart';
 import 'package:fluxer_app/core/push/fcm/fcm_notification_tap_binding.dart';
 import 'package:fluxer_app/core/push/fcm/fcm_pending_notification_tap.dart';
@@ -74,7 +77,7 @@ class AppStartup extends _$AppStartup {
     unawaited(EmojiRegistry.preload());
     unawaited(ref.read(wellKnownProvider.future));
     unawaited(EmojiSpriteSheet.preload());
-    unawaited(bootstrapFcmAfterRunApp());
+    unawaited(_bootstrapFcmWithDynamicCredentials());
     final database = ref.read(fluxerDatabaseProvider);
     final authRepository = ref.read(authRepositoryProvider);
     debugPrint('[AppStartup] Database obtained, migrating legacy tokens…');
@@ -205,5 +208,46 @@ class AppStartup extends _$AppStartup {
       '[AppStartup] Session restored '
       'for user ${session.userId}',
     );
+  }
+
+  Future<void> _bootstrapFcmWithDynamicCredentials() async {
+    if (!PushProviderGuard.isFirebaseMessaging || !Platform.isAndroid) {
+      return;
+    }
+    try {
+      // Wait for the well-known response so we can extract android_fcm credentials.
+      final WellKnownFluxerResponse wellKnown =
+          await ref.read(wellKnownProvider.future);
+      final WellKnownFluxerResponsePushAndroidFcm? androidFcm =
+          wellKnown.push.androidFcm;
+      if (androidFcm != null) {
+        // Cache credentials so the background isolate can find them too.
+        await FcmCredentialsCache.save(
+          appId: androidFcm.appId,
+          projectId: androidFcm.projectId,
+          apiKey: androidFcm.apiKey,
+          senderId: androidFcm.senderId,
+        );
+        final firebaseOptions = FirebaseOptions(
+          appId: androidFcm.appId,
+          projectId: androidFcm.projectId,
+          apiKey: androidFcm.apiKey,
+          messagingSenderId: androidFcm.senderId,
+        );
+        await bootstrapFcmAfterRunApp(firebaseOptions: firebaseOptions);
+        if (kDebugMode) {
+          debugPrint('[AppStartup] FCM initialized with dynamic credentials');
+        }
+      } else {
+        // No dynamic credentials -- use build-time default (official server).
+        await bootstrapFcmAfterRunApp();
+      }
+    } on Object catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint(
+          '[AppStartup] FCM bootstrap failed: $error\n$stackTrace',
+        );
+      }
+    }
   }
 }

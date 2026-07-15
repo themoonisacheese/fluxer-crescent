@@ -6,8 +6,8 @@ import 'package:fluxer_fcm/fcm_push_message.dart';
 import 'package:fluxer_fcm/fcm_background_display_hooks.dart';
 import 'package:fluxer_fcm/fcm_background_notification_tap_hooks.dart';
 import 'package:fluxer_fcm/fcm_system_notification_cancel_hooks.dart';
-import 'package:fluxer_fcm/firebase_options.dart';
 import 'package:fluxer_fcm/fcm_tap_payload_cache_hooks.dart';
+import 'package:fluxer_fcm/firebase_options.dart';
 import 'package:fluxer_fcm/fluxer_fcm_push_service.dart';
 
 typedef FcmTapPayloadEnricher =
@@ -92,14 +92,23 @@ class FluxerFcmBootstrap {
     }
   }
 
-  static Future<void> bootstrapAfterRunApp() async {
+  /// Bootstrap Firebase + FCM.
+  ///
+  /// When [firebaseOptions] is provided, those are used for `Firebase.initializeApp`.
+  /// Otherwise falls back to the build-time [DefaultFirebaseOptions.currentPlatform]
+  /// (which works with the official Fluxer server's Firebase project).
+  static Future<void> bootstrapAfterRunApp({
+    FirebaseOptions? firebaseOptions,
+  }) async {
     try {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
+          options: firebaseOptions ?? DefaultFirebaseOptions.currentPlatform,
         );
       }
-      await FluxerFcmPushService.instance.initialize();
+      await FluxerFcmPushService.instance.initialize(
+        firebaseOptions: firebaseOptions,
+      );
     } on Object catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluxer_app/core/build/push_provider_guard.dart';
@@ -50,12 +51,21 @@ Future<void> bootstrapFcmIfNeeded() async {
   }
 }
 
-Future<void> bootstrapFcmAfterRunApp() async {
+/// Bootstrap Firebase + FCM, optionally with dynamically-provided [firebaseOptions].
+///
+/// When a self-hosted server provides android_fcm credentials via well-known,
+/// those are passed here. Otherwise Firebase initializes with the build-time
+/// default (which only works with the official server).
+Future<void> bootstrapFcmAfterRunApp({
+  FirebaseOptions? firebaseOptions,
+}) async {
   if (!PushProviderGuard.isFirebaseMessaging || !Platform.isAndroid) {
     return;
   }
   try {
-    await FluxerFcmBootstrap.bootstrapAfterRunApp();
+    await FluxerFcmBootstrap.bootstrapAfterRunApp(
+      firebaseOptions: firebaseOptions,
+    );
   } on Object catch (error, stackTrace) {
     if (kDebugMode) {
       debugPrint('[FCM] bootstrapAfterRunApp failed: $error\n$stackTrace');
