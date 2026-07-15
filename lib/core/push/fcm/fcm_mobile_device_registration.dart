@@ -131,23 +131,22 @@ class FcmMobileDeviceRegistration extends _$FcmMobileDeviceRegistration {
     try {
       await push.initialize();
     } on Object catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[FcmMobileDeviceRegistration] initialize failed: $e\n$st');
-      }
+      debugPrint('[FcmMobileDeviceRegistration] initialize failed: $e\n$st');
       return;
     }
+    // Wait for FCM initialization to truly complete before polling for token.
+    await FirebaseMessagingPushService.delegate.initialized;
     String? token;
     for (var attempt = 0; attempt < _tokenPollAttempts; attempt++) {
       token = await push.getToken();
       if (token != null && token.isNotEmpty) {
         break;
       }
+      debugPrint('[FcmMobileDeviceRegistration] token poll attempt $attempt: null');
       await Future<void>.delayed(_tokenPollDelay);
     }
     if (token == null || token.isEmpty) {
-      if (kDebugMode) {
-        debugPrint('[FcmMobileDeviceRegistration] No FCM token after polling');
-      }
+      debugPrint('[FcmMobileDeviceRegistration] No FCM token after polling (${_tokenPollAttempts} attempts). FCM status: ${FirebaseMessagingPushService.delegate.diagnosticInfo}');
       return;
     }
     if (shouldSkipFcmRegistration(

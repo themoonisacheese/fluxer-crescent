@@ -20,6 +20,9 @@ class FluxerFcmPushService {
       StreamController<String>.broadcast();
 
   bool _initialized = false;
+  String? _lastError;
+  String? _currentToken;
+  final Completer<void> _initCompleter = Completer<void>();
   void Function(Map<String, String> payload)? _onNotificationTap;
   Map<String, String>? _pendingNotificationTapPayload;
   StreamSubscription<RemoteMessage>? _onMessageSubscription;
@@ -86,51 +89,87 @@ class FluxerFcmPushService {
     if (_initialized) {
       return;
     }
-    // If dynamic options are provided but Firebase was already initialized
-    // (e.g. by FirebaseInitProvider or a previous call), reinitialize with the
-    // server's credentials so the correct messagingSenderId is used.
-    if (firebaseOptions != null && Firebase.apps.isNotEmpty) {
-      await Firebase.app().delete();
-    }
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(options: firebaseOptions);
-    }
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-    _onMessageSubscription = FirebaseMessaging.onMessage.listen(
-      _onForegroundMessage,
-    );
-    _onMessageOpenedAppSubscription = FirebaseMessaging.onMessageOpenedApp
-        .listen(_onMessageOpenedApp);
-    _onTokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh
-        .listen((String token) {
-          if (token.isNotEmpty) {
-            _tokenRefresh.add(token);
-          }
-        });
-    final RemoteMessage? initialMessage = await FirebaseMessaging.instance
-        .getInitialMessage();
-    if (initialMessage != null) {
-      if (kDebugMode) {
+    try {
+      // If dynamic options are provided but Firebase was already initialized
+      // (e.g. by FirebaseInitProvider or a previous call), reinitialize with the
+      // server's credentials so the correct messagingSenderId is used.
+      if (firebaseOptions != null && Firebase.apps.isNotEmpty) {
+        debugPrint('[FluxerFcmPushService] deleting existing Firebase app to reinit with dynamic credentials');
+        await Firebase.app().delete();
+      }
+      if (Firebase.apps.isEmpty) {
+        debugPrint('[FluxerFcmPushService] initializing Firebase with ${firebaseOptions != null ? "dynamic" : "default"} options, projectId=${firebaseOptions?.projectId}, senderId=${firebaseOptions?.messagingSenderId}');
+        await Firebase.initializeApp(options: firebaseOptions);
+        debugPrint('[FluxerFcmPushService] Firebase.initializeApp succeeded, apps=${Firebase.apps.length}');
+      }
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      _onMessageSubscription = FirebaseMessaging.onMessage.listen(
+        _onForegroundMessage,
+      );
+      _onMessageOpenedAppSubscription = FirebaseMessaging.onMessageOpenedApp
+          .listen(_onMessageOpenedApp);
+      _onTokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh
+          .listen((String token) {
+            debugPrint('[FluxerFcmPushService] onTokenRefresh: $token');
+            _currentToken = token;
+            if (token.isNotEmpty) {
+              _tokenRefresh.add(token);
+            }
+          });
+      final RemoteMessage? initialMessage = await FirebaseMessaging.instance
+          .getInitialMessage();
+      if (initialMessage != null) {
         debugPrint(
           '[FluxerFcmPushService] getInitialMessage '
           'id=${initialMessage.messageId} data=${initialMessage.data}',
         );
+        await _dispatchTap(initialMessage);
       }
-      await _dispatchTap(initialMessage);
-    }
-    _initialized = true;
-    if (kDebugMode) {
+      _initialized = true;
+      _lastError = null;
       debugPrint('[FluxerFcmPushService] initialized');
+    } on Object catch (error, stackTrace) {
+      _lastError = error.toString();
+      debugPrint('[FluxerFcmPushService] initialize FAILED: $error\n$stackTrace');
+      rethrow;
+    } finally {
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
     }
   }
 
+  /// Wait for [initialize] to complete (success or failure).
+  Future<void> get initialized => _initCompleter.future;
+
   Future<String?> getToken() async {
-    return FirebaseMessaging.instance.getToken();
+    try {
+      // Ensure initialize() has completed before requesting a token.
+      await _initCompleter.future;
+      final String? token = await FirebaseMessaging.instance.getToken();
+      _currentToken = token;
+      debugPrint('[FluxerFcmPushService] getToken() => ${token != null ? "${token.substring(0, 20)}..." : "null"}');
+      if (token == null || token.isEmpty) {
+        // Force a token refresh — sometimes the SDK needs a nudge after
+        // dynamic initialization.
+        debugPrint('[FluxerFcmPushService] token was null, forcing deleteToken+getToken');
+        await FirebaseMessaging.instance.deleteToken();
+        final String? refreshed = await FirebaseMessaging.instance.getToken();
+        _currentToken = refreshed;
+        debugPrint('[FluxerFcmPushService] after refresh => ${refreshed != null ? "${refreshed.substring(0, 20)}..." : "null"}');
+        return refreshed;
+      }
+      return token;
+    } on Object catch (error, stackTrace) {
+      _lastError = error.toString();
+      debugPrint('[FluxerFcmPushService] getToken FAILED: $error\n$stackTrace');
+      return null;
+    }
   }
 
   Stream<FcmPushMessage> watchMessages() => _messages.stream;
@@ -195,6 +234,11 @@ class FluxerFcmPushService {
       return;
     }
     _pendingNotificationTapPayload = Map<String, String>.unmodifiable(payload);
+  }
+
+  /// Diagnostic info for troubleshooting.
+  String get diagnosticInfo {
+    return 'init=$_initialized, token=${_currentToken != null ? "${_currentToken!.substring(0, 20)}..." : "null"}, error=${_lastError ?? "none"}, apps=${Firebase.apps.length}';
   }
 
   @visibleForTesting

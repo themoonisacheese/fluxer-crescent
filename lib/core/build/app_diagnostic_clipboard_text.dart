@@ -7,6 +7,7 @@ import 'package:fluxer_app/core/api/fluxer_client_properties.dart';
 import 'package:fluxer_app/core/build/app_build_config.dart';
 import 'package:fluxer_app/core/build/push_provider_kind.dart';
 import 'package:fluxer_app/core/providers/app_runtime_info.dart';
+import 'package:fluxer_fcm/fluxer_fcm_push_service.dart';
 
 Future<String> resolveDeviceModelName() async {
   if (kIsWeb) {
@@ -172,4 +173,16 @@ String formatAppDiagnosticClipboardText(AppRuntimeInfo info) {
 
   return 'Version ${info.releaseVersion}, Channel $channel, Build ${info.buildNumber}, $osPart'
       '$deviceSegment, Locale $locale, Push $push, Flutter $flutter, Dart $dart';
+}
+
+/// Returns FCM diagnostic info if the push provider is firebase messaging.
+String fcmDiagnosticSuffix() {
+  if (AppBuildConfig.pushProvider != PushProviderKind.firebaseMessaging) {
+    return '';
+  }
+  try {
+    return ', FCM ${FluxerFcmPushService.instance.diagnosticInfo}';
+  } on Object {
+    return '';
+  }
 }

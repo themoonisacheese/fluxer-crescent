@@ -235,19 +235,16 @@ class AppStartup extends _$AppStartup {
           messagingSenderId: androidFcm.messagingSenderId,
         );
         await bootstrapFcmAfterRunApp(firebaseOptions: firebaseOptions);
-        if (kDebugMode) {
-          debugPrint('[AppStartup] FCM initialized with dynamic credentials');
-        }
+        debugPrint('[AppStartup] FCM initialized with dynamic credentials: projectId=${androidFcm.projectId}, senderId=${androidFcm.messagingSenderId}');
       } else {
         // No dynamic credentials -- use build-time default (official server).
         await bootstrapFcmAfterRunApp();
+        debugPrint('[AppStartup] FCM initialized with build-time default credentials');
       }
     } on Object catch (error, stackTrace) {
-      if (kDebugMode) {
-        debugPrint(
-          '[AppStartup] FCM bootstrap failed: $error\n$stackTrace',
-        );
-      }
+      debugPrint(
+        '[AppStartup] FCM bootstrap failed: $error\n$stackTrace',
+      );
     }
   }
 }
