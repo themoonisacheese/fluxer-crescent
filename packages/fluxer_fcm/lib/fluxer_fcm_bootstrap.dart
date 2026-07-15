@@ -101,14 +101,9 @@ class FluxerFcmBootstrap {
     FirebaseOptions? firebaseOptions,
   }) async {
     try {
-      // If dynamic options are provided but Firebase was already initialized
-      // (e.g. by FirebaseInitProvider with build-time google-services.json
-      // credentials, or by a previous bootstrap call), delete the existing app
-      // so we can reinitialize with the server's credentials. This ensures the
-      // correct messagingSenderId is used for token generation on every server.
-      if (firebaseOptions != null && Firebase.apps.isNotEmpty) {
-        await Firebase.app().delete();
-      }
+      // Only initialize if not already done. We never fall back to
+      // placeholder credentials — if firebaseOptions is null, the caller
+      // should have skipped the call entirely.
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
           options: firebaseOptions ?? DefaultFirebaseOptions.currentPlatform,

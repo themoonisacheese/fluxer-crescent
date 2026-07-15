@@ -90,13 +90,6 @@ class FluxerFcmPushService {
       return;
     }
     try {
-      // If dynamic options are provided but Firebase was already initialized
-      // (e.g. by FirebaseInitProvider or a previous call), reinitialize with the
-      // server's credentials so the correct messagingSenderId is used.
-      if (firebaseOptions != null && Firebase.apps.isNotEmpty) {
-        debugPrint('[FluxerFcmPushService] deleting existing Firebase app to reinit with dynamic credentials');
-        await Firebase.app().delete();
-      }
       if (Firebase.apps.isEmpty) {
         debugPrint('[FluxerFcmPushService] initializing Firebase with ${firebaseOptions != null ? "dynamic" : "default"} options, projectId=${firebaseOptions?.projectId}, senderId=${firebaseOptions?.messagingSenderId}');
         await Firebase.initializeApp(options: firebaseOptions);

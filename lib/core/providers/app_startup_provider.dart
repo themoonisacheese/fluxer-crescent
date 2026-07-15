@@ -75,8 +75,22 @@ class AppStartup extends _$AppStartup {
     final Stopwatch startupStopwatch = Stopwatch()..start();
     await ref.read(appRuntimeInfoProvider.future);
     unawaited(EmojiRegistry.preload());
-    unawaited(ref.read(wellKnownProvider.future));
     unawaited(EmojiSpriteSheet.preload());
+    // Start the well-known fetch but don't block on a potentially stale
+    // cached response — _bootstrapFcmWithDynamicCredentials awaits it.
+    unawaited(ref.read(wellKnownProvider.future));
+    // Listen for well-known refreshes so we can bootstrap FCM once the
+    // real androidFcm credentials arrive (the first response may be stale).
+    if (PushProviderGuard.isFirebaseMessaging && Platform.isAndroid) {
+      ref.listen(wellKnownProvider, (previous, next) {
+        final prevFcm = previous?.valueOrNull?.push.androidFcm;
+        final nextFcm = next.valueOrNull?.push.androidFcm;
+        if (prevFcm == null && nextFcm != null) {
+          debugPrint('[AppStartup] well-known refreshed with FCM credentials, re-triggering bootstrap');
+          unawaited(_bootstrapFcmWithDynamicCredentials());
+        }
+      });
+    }
     await _bootstrapFcmWithDynamicCredentials();
     final database = ref.read(fluxerDatabaseProvider);
     final authRepository = ref.read(authRepositoryProvider);
@@ -237,9 +251,10 @@ class AppStartup extends _$AppStartup {
         await bootstrapFcmAfterRunApp(firebaseOptions: firebaseOptions);
         debugPrint('[AppStartup] FCM initialized with dynamic credentials: projectId=${androidFcm.projectId}, senderId=${androidFcm.messagingSenderId}');
       } else {
-        // No dynamic credentials -- use build-time default (official server).
-        await bootstrapFcmAfterRunApp();
-        debugPrint('[AppStartup] FCM initialized with build-time default credentials');
+        // No dynamic credentials yet — do NOT fall back to build-time
+        // placeholder credentials. The well-known listener will re-trigger
+        // bootstrap once the real androidFcm config arrives.
+        debugPrint('[AppStartup] No androidFcm credentials yet, deferring FCM bootstrap');
       }
     } on Object catch (error, stackTrace) {
       debugPrint(
