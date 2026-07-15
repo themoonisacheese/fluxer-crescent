@@ -1,0 +1,114 @@
+name: Android Dynamic FCM Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dynamic-fcm, feature/android-fcm-dynamic-config]
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Sync submodules
+        run: git submodule update --init --recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Restore Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Restore pub cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Merge Firebase dependencies
+        run: dart run tool/merge_firebase_deps.dart
+
+      - name: Create placeholder firebase_options.dart
+        run: |
+          mkdir -p packages/fluxer_fcm/lib
+          cat > packages/fluxer_fcm/lib/firebase_options.dart << 'DART'
+          // Placeholder — dynamic FCM init reads credentials from well-known.
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+          import 'package:flutter/foundation.dart'
+              show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+          class DefaultFirebaseOptions {
+            static FirebaseOptions get currentPlatform {
+              if (kIsWeb) {
+                throw UnsupportedError('FCM is not configured for web.');
+              }
+              switch (defaultTargetPlatform) {
+                case TargetPlatform.android:
+                  return android;
+                default:
+                  throw UnsupportedError(
+                    'DefaultFirebaseOptions are only configured for Android FCM builds.',
+                  );
+              }
+            }
+
+            static const FirebaseOptions android = FirebaseOptions(
+              apiKey: 'placeholder',
+              appId: 'placeholder',
+              messagingSenderId: 'placeholder',
+              projectId: 'placeholder',
+            );
+          }
+          DART
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Create debug signing key
+        run: |
+          keytool -genkey -v -keystore /tmp/debug-keystore.jks \
+            -keyalg RSA -keysize 2048 -validity 3650 \
+            -alias upload -storepass android -keypass android \
+            -dname "CN=Fluxer Dev, OU=Dev, O=Fluxer, L=Paris, ST=France, C=FR"
+          cat > android/key.properties << EOF
+          storePassword=android
+          keyPassword=android
+          keyAlias=upload
+          storeFile=/tmp/debug-keystore.jks
+          EOF
+
+      - name: Build canary FCM split APKs
+        run: flutter build apk --release --split-per-abi --flavor canaryFcm --dart-define-from-file=tool/dart_defines/canary.json --dart-define=PUSH_PROVIDER=fcm --dart-define=BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-fcm-apk
+          path: |
+            build/app/outputs/flutter-apk/app-*-canaryfcm-release.apk
+          if-no-files-found: error
