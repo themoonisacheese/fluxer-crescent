@@ -226,13 +226,13 @@ class AppStartup extends _$AppStartup {
           appId: androidFcm.appId,
           projectId: androidFcm.projectId,
           apiKey: androidFcm.apiKey,
-          senderId: androidFcm.senderId,
+          senderId: androidFcm.messagingSenderId,
         );
         final firebaseOptions = FirebaseOptions(
           appId: androidFcm.appId,
           projectId: androidFcm.projectId,
           apiKey: androidFcm.apiKey,
-          messagingSenderId: androidFcm.senderId,
+          messagingSenderId: androidFcm.messagingSenderId,
         );
         await bootstrapFcmAfterRunApp(firebaseOptions: firebaseOptions);
         if (kDebugMode) {
