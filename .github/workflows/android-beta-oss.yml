@@ -10,7 +10,7 @@ permissions:
 jobs:
   build-beta-oss:
     name: Build beta OSS APK (UnifiedPush)
-    runs-on: macos-26
+    runs-on: self-hosted
     environment: build
     steps:
       - name: Checkout repository

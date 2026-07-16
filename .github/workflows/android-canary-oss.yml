@@ -7,7 +7,7 @@ on:
 jobs:
   build-canary-oss:
     name: Build canary OSS APK (UnifiedPush)
-    runs-on: macos-26
+    runs-on: self-hosted
     environment: build
     steps:
       - name: Checkout repository

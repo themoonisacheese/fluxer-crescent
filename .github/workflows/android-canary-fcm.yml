@@ -7,7 +7,7 @@ on:
 jobs:
   build-canary:
     name: Build canary APK
-    runs-on: macos-26
+    runs-on: self-hosted
     environment: build
     steps:
       - name: Checkout repository
@@ -117,7 +117,7 @@ jobs:
           if [ -n "$GOOGLE_SERVICES_JSON_ANDROID_CANARY" ]; then
             echo "$GOOGLE_SERVICES_JSON_ANDROID_CANARY" > android/app/google-services.json
           elif [ -n "$GOOGLE_SERVICES_JSON_ANDROID" ]; then
-            echo "::warning::Using GOOGLE_SERVICES_JSON_ANDROID; for com.fluxer.canary prefer repository secret GOOGLE_SERVICES_JSON_ANDROID_CANARY."
+            echo "::warning::Using GOOGLE_SERVICES_JSON_ANDROID; for website.poggers.chat prefer repository secret GOOGLE_SERVICES_JSON_ANDROID_CANARY."
             echo "$GOOGLE_SERVICES_JSON_ANDROID" > android/app/google-services.json
           else
             echo "::warning::Neither GOOGLE_SERVICES_JSON_ANDROID_CANARY nor GOOGLE_SERVICES_JSON_ANDROID is set. Existing android/app/google-services.json will be used if present."

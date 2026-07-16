@@ -37,7 +37,7 @@ jobs:
       always() &&
       needs.draft-release.result == 'success' &&
       (needs.android-fcm.result == 'success' || needs.android-oss.result == 'success')
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Download FCM APK artifacts
         if: needs.android-fcm.result == 'success'
