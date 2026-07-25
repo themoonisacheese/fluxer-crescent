@@ -25,6 +25,38 @@ This is the repo for the official Fluxer mobile app powered by Flutter (desktop 
 
 You can follow more about the V1 development and what features are planned/implemented in this [Roadmap issue](https://github.com/fluxerapp/flutter_client/issues/184).
 
+---
+
+## Fork Changes
+
+This fork adds dynamic Firebase Cloud Messaging (FCM) configuration support, enabling the Android client to receive push notifications from self-hosted Fluxer instances without hardcoding Firebase credentials at build time.
+
+### Dynamic Android FCM Configuration
+
+The official Fluxer client only supports FCM with the official Fluxer server (credentials are baked in at build time). This fork adds the ability to fetch FCM credentials dynamically from the server at runtime.
+
+**How it works:**
+
+1. On startup, the app fetches `/.well-known/fluxer` from the connected instance.
+2. If the server provides an `android_fcm` config block, the app caches it (via `FcmCredentialsCache` using `shared_preferences`).
+3. Firebase is initialized dynamically with those credentials (instead of the build-time `google-services.json`).
+4. The app registers for FCM push notifications using the server-provided sender ID.
+5. A background isolate handler retrieves cached credentials for background message handling.
+
+The canary build uses the application ID **`website.poggers.chat`** — self-hosted instance operators must register their Firebase Android app with this exact package name. See the [server fork README](https://github.com/themoonisacheese/fluxer) for full setup instructions.
+
+**Key changes from upstream:**
+
+- `lib/core/push/fcm/fcm_credentials_cache.dart` — caches well-known FCM credentials across isolates
+- `lib/core/providers/app_startup_provider.dart` — fetches well-known config and passes FCM credentials to the bootstrap
+- `packages/fluxer_fcm/lib/fluxer_fcm_bootstrap.dart` — accepts dynamic `FirebaseOptions` instead of relying solely on build-time config
+- `packages/fluxer_fcm/lib/fcm_background_handler.dart` — retrieves cached credentials in background isolate
+- `android/app/build.gradle.kts` — canary flavor uses `website.poggers.chat` as application ID
+- `.github/workflows/android-dynamic-fcm.yml` — CI workflow for building the dynamic FCM variant
+- `android/app/google-services.json` — placeholder for dynamic FCM builds
+
+A `google-services.json` placeholder is committed for dynamic FCM builds; Firebase initializes with server-provided credentials at runtime, so it's only needed to satisfy the Gradle build.
+
 # Community
 
 > [!NOTE]
