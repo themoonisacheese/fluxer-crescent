@@ -39,7 +39,7 @@ class ShareHandler extends _$ShareHandler {
   StreamSubscription<dynamic>? _subscription;
 
   @override
-  void build() {
+  SharePayload? build() {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       _subscription = _eventChannel.receiveBroadcastStream().listen(
         _onShareEvent,
@@ -50,15 +50,14 @@ class ShareHandler extends _$ShareHandler {
       ref.onDispose(() => _subscription?.cancel());
       unawaited(_checkInitialShareIntent());
     }
+    return null;
   }
 
   Future<void> _checkInitialShareIntent() async {
     try {
-      final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>(
-        'getInitialShareIntent',
-      );
+      final result = await _methodChannel.invokeMethod<Map>('getInitialShareIntent');
       if (result != null) {
-        final payload = _parsePayload(result);
+        final payload = _parsePayload(result.cast<String, dynamic>());
         if (!payload.isEmpty) {
           talker.info('[ShareHandler] Initial share intent: $payload');
           state = payload;
