@@ -9,6 +9,7 @@ jobs:
   build:
     name: Build APK
     runs-on: self-hosted
+    environment: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -126,17 +127,20 @@ jobs:
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Create debug signing key
+      - name: Create Android signing files
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          keytool -genkey -v -keystore /tmp/debug-keystore.jks \
-            -keyalg RSA -keysize 2048 -validity 3650 \
-            -alias upload -storepass android -keypass android \
-            -dname "CN=Fluxer Dev, OU=Dev, O=Fluxer, L=Paris, ST=France, C=FR"
+          KEYSTORE_PATH="$RUNNER_TEMP/upload-keystore.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
           cat > android/key.properties << EOF
-          storePassword=android
-          keyPassword=android
-          keyAlias=upload
-          storeFile=/tmp/debug-keystore.jks
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=$KEYSTORE_PATH
           EOF
 
       - name: Build canary FCM split APKs

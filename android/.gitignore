@@ -13,3 +13,4 @@ key.properties
 **/*.keystore
 !app/debug.keystore
 **/*.jks
+**/*.p12
