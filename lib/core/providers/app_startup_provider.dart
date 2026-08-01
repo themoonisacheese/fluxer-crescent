@@ -192,7 +192,7 @@ class AppStartup extends _$AppStartup {
       ..read(shareHandlerProvider);
 
     ref.read(deepLinkHandlerProvider.notifier).processPendingDeepLink();
-    ref.read(shareHandlerProvider.notifier).processPendingShare();
+    await ref.read(shareHandlerProvider.notifier).processPendingShare();
     ref.read(pendingPushNotificationPathProvider.notifier).flushIfReady();
 
     debugPrint(
