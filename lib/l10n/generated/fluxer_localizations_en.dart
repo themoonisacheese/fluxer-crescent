@@ -9492,6 +9492,15 @@ class FluxerLocalizationsEn extends FluxerLocalizations {
   String get createDmFailed => 'Couldn\'t create the conversation. Try again.';
 
   @override
+  String get shareTitle => 'Share';
+
+  @override
+  String get shareSend => 'Send';
+
+  @override
+  String get shareSendFailed => 'Couldn\'t send the shared content. Try again.';
+
+  @override
   String get dmListMessagesTitle => 'Messages';
 
   @override

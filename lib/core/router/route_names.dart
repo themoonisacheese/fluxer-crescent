@@ -30,6 +30,7 @@ abstract final class RouteNames {
   static const invite = 'invite';
   static const gift = 'gift';
   static const themePreview = 'theme-preview';
+  static const share = 'share';
 
   // Settings (pushed on root)
   static const guildSettings = 'guild-settings';
@@ -83,6 +84,7 @@ abstract final class RoutePaths {
   static String inviteLink(String code) => '/invite/$code';
   static String giftLink(String code) => '/gift/$code';
   static String themeLink(String themeId) => '/theme/$themeId';
+  static const share = '/share';
   static String guildSettingsPath(String guildId, {String? tab}) {
     final base = '/settings/guild/$guildId';
     if (tab == null) {

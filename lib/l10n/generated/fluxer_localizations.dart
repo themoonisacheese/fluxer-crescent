@@ -16077,6 +16077,24 @@ abstract class FluxerLocalizations {
   /// **'Couldn\'t create the conversation. Try again.'**
   String get createDmFailed;
 
+  /// Title of the share screen shown when sharing content to Fluxer from another app.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareTitle;
+
+  /// Button label to send shared content to the selected friend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get shareSend;
+
+  /// Error message when sending shared content fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send the shared content. Try again.'**
+  String get shareSendFailed;
+
   /// Mobile header title for the DM list.
   ///
   /// In en, this message translates to:

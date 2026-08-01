@@ -15,8 +15,10 @@ class MainActivity : FlutterActivity() {
             callData: Bundle,
         ) {}
     }
+    private val shareIntentBridge = ShareIntentBridge()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        shareIntentBridge.handleIntent(intent)
         if (deferOAuthDeepLinkToBrowser(intent)) {
             return
         }
@@ -25,6 +27,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onNewIntent(intent: Intent) {
+        shareIntentBridge.handleIntent(intent)
         if (deferOAuthDeepLinkToBrowser(intent)) {
             return
         }
@@ -38,6 +41,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        shareIntentBridge.register(flutterEngine)
         NotificationCancelBridge(applicationContext).register(flutterEngine)
     }
 
