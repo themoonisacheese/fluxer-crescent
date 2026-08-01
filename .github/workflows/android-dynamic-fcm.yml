@@ -3,7 +3,7 @@ name: Android Dynamic FCM Build
 on:
   workflow_dispatch:
   push:
-    branches: [dynamic-fcm, feature/android-fcm-dynamic-config]
+    branches: [dynamic-fcm, feature/android-fcm-dynamic-config, feature/share-intent]
 
 jobs:
   build:
