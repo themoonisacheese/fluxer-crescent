@@ -21,7 +21,7 @@ void main() {
       );
     });
 
-    test('skips hybrid messages when display hook is unset', () {
+    test('displays hybrid messages even when display hook is unset', () {
       final RemoteMessage input = RemoteMessage(
         messageId: 'msg-hybrid',
         data: <String, String>{'channel_id': '2', 'url': '/channels/@me/2/1'},
@@ -30,7 +30,7 @@ void main() {
       final FcmPushMessage mapped = mapRemoteMessage(input);
       expect(
         shouldDisplayFcmBackgroundLocalNotification(input, mapped),
-        isFalse,
+        isTrue,
       );
     });
 

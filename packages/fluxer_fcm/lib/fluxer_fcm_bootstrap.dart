@@ -82,12 +82,10 @@ class FluxerFcmBootstrap {
     try {
       FirebaseMessaging.onBackgroundMessage(onBackgroundMessage);
     } on Object catch (error, stackTrace) {
-      if (kDebugMode) {
-        debugPrint(
-          '[FluxerFcmBootstrap] background handler registration failed: '
-          '$error\n$stackTrace',
-        );
-      }
+      debugPrint(
+        '[FluxerFcmBootstrap] background handler registration failed: '
+        '$error\n$stackTrace',
+      );
       rethrow;
     }
   }
@@ -113,12 +111,10 @@ class FluxerFcmBootstrap {
         firebaseOptions: firebaseOptions,
       );
     } on Object catch (error, stackTrace) {
-      if (kDebugMode) {
-        debugPrint(
-          '[FluxerFcmBootstrap] bootstrapAfterRunApp failed: '
-          '$error\n$stackTrace',
-        );
-      }
+      debugPrint(
+        '[FluxerFcmBootstrap] bootstrapAfterRunApp failed: '
+        '$error\n$stackTrace',
+      );
       rethrow;
     }
   }

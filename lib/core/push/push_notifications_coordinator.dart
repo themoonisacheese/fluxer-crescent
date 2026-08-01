@@ -76,16 +76,15 @@ class PushNotificationsCoordinator extends _$PushNotificationsCoordinator {
     try {
       ref.read(fcmNotificationTapBindingProvider);
       final bool granted = await requestPushNotificationPermission();
-      if (kDebugMode) {
-        debugPrint(
-          '[PushNotificationsCoordinator] notification permission: $granted',
-        );
-      }
+      debugPrint(
+        '[PushNotificationsCoordinator] notification permission: $granted',
+      );
       await _localPush.ensureInitialized(
         onNotificationTap: ref
             .read(pushNotificationTapHandlerProvider.notifier)
             .handlePayloadJson,
       );
+      debugPrint('[PushNotificationsCoordinator] local push initialized');
       final PushService pushService = ref.read(pushServiceProvider);
       if (PushProviderGuard.isUnifiedPush) {
         final UnifiedPushService unifiedPush =
@@ -94,6 +93,7 @@ class PushNotificationsCoordinator extends _$PushNotificationsCoordinator {
       } else {
         await pushService.initialize();
       }
+      debugPrint('[PushNotificationsCoordinator] push service initialized');
       if (PushProviderGuard.isApple) {
         unawaited(
           ref.read(apnsMobileDeviceRegistrationProvider.notifier).sync(),
@@ -116,15 +116,11 @@ class PushNotificationsCoordinator extends _$PushNotificationsCoordinator {
       _messageSubscription = pushService.watchMessages().listen(
         _onIncomingPush,
         onError: (Object err, StackTrace st) {
-          if (kDebugMode) {
-            debugPrint('[PushNotificationsCoordinator] message stream: $err');
-          }
+          debugPrint('[PushNotificationsCoordinator] message stream error: $err\n$st');
         },
       );
     } on Object catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[PushNotificationsCoordinator] bootstrap failed: $e\n$st');
-      }
+      debugPrint('[PushNotificationsCoordinator] bootstrap failed: $e\n$st');
     }
   }
 

@@ -44,9 +44,7 @@ Future<void> bootstrapFcmIfNeeded() async {
       onBackgroundMessage: fcmBackgroundMessageHandlerEntry,
     );
   } on Object catch (error, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('[FCM] bootstrapIfNeeded failed: $error\n$stackTrace');
-    }
+    debugPrint('[FCM] bootstrapIfNeeded failed: $error\n$stackTrace');
     rethrow;
   }
 }
@@ -67,9 +65,7 @@ Future<void> bootstrapFcmAfterRunApp({
       firebaseOptions: firebaseOptions,
     );
   } on Object catch (error, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('[FCM] bootstrapAfterRunApp failed: $error\n$stackTrace');
-    }
+    debugPrint('[FCM] bootstrapAfterRunApp failed: $error\n$stackTrace');
     rethrow;
   }
 }

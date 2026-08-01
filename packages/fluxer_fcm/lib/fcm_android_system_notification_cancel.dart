@@ -60,12 +60,10 @@ Future<void> cancelFcmSystemNotificationDuplicates(
     try {
       await plugin.cancel(id: id);
     } on Object catch (error, stackTrace) {
-      if (kDebugMode) {
-        debugPrint(
-          '[FcmSystemNotificationCancel] cancel id=$id failed: '
-          '$error\n$stackTrace',
-        );
-      }
+      debugPrint(
+        '[FcmSystemNotificationCancel] cancel id=$id failed: '
+        '$error\n$stackTrace',
+      );
     }
   }
 }

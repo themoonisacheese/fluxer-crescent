@@ -14,22 +14,41 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 @pragma('vm:entry-point')
 Future<void> fcmBackgroundMessageHandler(RemoteMessage message) async {
+  // Ensure Flutter bindings are initialized for plugin access.
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    if (Firebase.apps.isEmpty) {
-      // Try cached dynamic FCM credentials first, fall back to build-time default.
+  } on Object catch (error, stackTrace) {
+    debugPrint('[FCM] WidgetsFlutterBinding failed: $error\n$stackTrace');
+  }
+
+  // Initialize Firebase in a non-fatal way. The background handler runs in a
+  // separate isolate where Firebase.apps is always empty, so it must
+  // re-initialize. However, notification display (via
+  // flutter_local_notifications) does NOT depend on Firebase being available.
+  // If initialization fails (e.g. cached dynamic credentials are missing or
+  // DefaultFirebaseOptions has placeholder values), we still show the
+  // notification.
+  if (Firebase.apps.isEmpty) {
+    try {
       await Firebase.initializeApp(
         options: await _loadCachedFirebaseOptions()
             ?? DefaultFirebaseOptions.currentPlatform,
       );
-    }
-    if (kDebugMode) {
+    } on Object catch (error, stackTrace) {
       debugPrint(
-        '[FCM] background message id=${message.messageId} '
-        'hasNotification=${message.notification != null} '
-        'data=${message.data}',
+        '[FCM] Firebase.initializeApp failed (non-fatal, continuing): '
+        '$error\n$stackTrace',
       );
     }
+  }
+
+  debugPrint(
+    '[FCM] background message id=${message.messageId} '
+    'hasNotification=${message.notification != null} '
+    'data=${message.data}',
+  );
+
+  try {
     final FcmPushMessage mapped = mapRemoteMessage(message);
     if (FluxerFcmBootstrap.shouldSaveTapPayloadCache(mapped.payload)) {
       await FluxerFcmBootstrap.saveTapPayloadCache(
@@ -41,9 +60,7 @@ Future<void> fcmBackgroundMessageHandler(RemoteMessage message) async {
       await showFcmBackgroundNotification(mapped);
     }
   } on Object catch (error, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('[FCM] background handler failed: $error\n$stackTrace');
-    }
+    debugPrint('[FCM] notification display failed: $error\n$stackTrace');
   }
 }
 

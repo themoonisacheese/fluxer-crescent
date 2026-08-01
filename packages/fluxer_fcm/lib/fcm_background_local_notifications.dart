@@ -48,9 +48,7 @@ Future<void> ensureFcmBackgroundNotificationsReady() async {
         _onBackgroundNotificationResponse,
   );
   if (initialized != true) {
-    if (kDebugMode) {
-      debugPrint('[FcmBackgroundNotifications] initialize failed');
-    }
+    debugPrint('[FcmBackgroundNotifications] initialize failed');
     return;
   }
   final AndroidFlutterLocalNotificationsPlugin? android = plugin
@@ -64,9 +62,7 @@ Future<void> ensureFcmBackgroundNotificationsReady() async {
 
 @pragma('vm:entry-point')
 void _onBackgroundNotificationResponse(NotificationResponse response) {
-  if (kDebugMode) {
-    debugPrint('[FcmBackgroundNotifications] tap payload=${response.payload}');
-  }
+  debugPrint('[FcmBackgroundNotifications] tap payload=${response.payload}');
   FcmBackgroundNotificationTapHooks.handleTap(response.payload);
 }
 
@@ -77,9 +73,7 @@ Future<void> showFcmBackgroundNotification(FcmPushMessage message) async {
   await ensureFcmBackgroundNotificationsReady();
   final FlutterLocalNotificationsPlugin? plugin = _backgroundPlugin;
   if (plugin == null) {
-    if (kDebugMode) {
-      debugPrint('[FcmBackgroundNotifications] show skipped: not ready');
-    }
+    debugPrint('[FcmBackgroundNotifications] show skipped: not ready');
     return;
   }
   final String title = resolveFcmBackgroundNotificationTitle(message);
@@ -117,10 +111,8 @@ Future<void> showFcmBackgroundNotification(FcmPushMessage message) async {
       },
     );
   } on Object catch (error, stackTrace) {
-    if (kDebugMode) {
-      debugPrint(
-        '[FcmBackgroundNotifications] show failed: $error\n$stackTrace',
-      );
-    }
+    debugPrint(
+      '[FcmBackgroundNotifications] show failed: $error\n$stackTrace',
+    );
   }
 }

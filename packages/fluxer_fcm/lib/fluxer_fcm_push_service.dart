@@ -78,11 +78,9 @@ class FluxerFcmPushService {
   Future<void> requestPermissions() async {
     final NotificationSettings settings = await FirebaseMessaging.instance
         .requestPermission();
-    if (kDebugMode) {
-      debugPrint(
-        '[FluxerFcmPushService] permission: ${settings.authorizationStatus}',
-      );
-    }
+    debugPrint(
+      '[FluxerFcmPushService] permission: ${settings.authorizationStatus}',
+    );
   }
 
   Future<void> initialize({FirebaseOptions? firebaseOptions}) async {
@@ -172,9 +170,7 @@ class FluxerFcmPushService {
     if (!shouldProcessForegroundMessage(mapped)) {
       return;
     }
-    if (kDebugMode) {
-      debugPrint('[FluxerFcmPushService] foreground id=${mapped.id}');
-    }
+    debugPrint('[FluxerFcmPushService] foreground id=${mapped.id}');
     unawaited(_cacheTapPayloadIfNeeded(message, mapped.payload));
     _messages.add(mapped);
   }
@@ -193,12 +189,10 @@ class FluxerFcmPushService {
   }
 
   void _onMessageOpenedApp(RemoteMessage message) {
-    if (kDebugMode) {
-      debugPrint(
-        '[FluxerFcmPushService] onMessageOpenedApp '
-        'id=${message.messageId} data=${message.data}',
-      );
-    }
+    debugPrint(
+      '[FluxerFcmPushService] onMessageOpenedApp '
+      'id=${message.messageId} data=${message.data}',
+    );
     unawaited(_dispatchTap(message));
   }
 
@@ -213,9 +207,7 @@ class FluxerFcmPushService {
     if (enricher != null) {
       payload = await enricher(message, payload);
     }
-    if (kDebugMode) {
-      debugPrint('[FluxerFcmPushService] tap payload=$payload');
-    }
+    debugPrint('[FluxerFcmPushService] tap payload=$payload');
     _dispatchTapPayload(payload);
   }
 
