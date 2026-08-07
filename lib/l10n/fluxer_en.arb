@@ -12129,6 +12129,18 @@
   "@createDmFailed": {
     "description": "Generic error when DM or group DM creation fails."
   },
+  "shareTitle": "Share",
+  "@shareTitle": {
+    "description": "Title of the share screen shown when sharing content to Fluxer from another app."
+  },
+  "shareSend": "Send",
+  "@shareSend": {
+    "description": "Button label to send shared content to the selected friend."
+  },
+  "shareSendFailed": "Couldn't send the shared content. Try again.",
+  "@shareSendFailed": {
+    "description": "Error message when sending shared content fails."
+  },
   "dmListMessagesTitle": "Messages",
   "@dmListMessagesTitle": {
     "description": "Mobile header title for the DM list."

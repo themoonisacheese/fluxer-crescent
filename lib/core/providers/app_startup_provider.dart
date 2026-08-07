@@ -8,6 +8,7 @@ import 'package:fluxer_app/core/build/push_provider_guard.dart';
 import 'package:fluxer_app/core/deep_links/deep_link_handler.dart';
 import 'package:fluxer_app/core/instance/instance_config_snapshot.dart';
 import 'package:fluxer_app/core/premium/current_user_entitlements_provider.dart';
+import 'package:fluxer_app/core/share/share_handler.dart';
 import 'package:fluxer_app/core/premium/premium_state_sync_provider.dart';
 import 'package:fluxer_app/core/providers/app_runtime_info_provider.dart';
 import 'package:fluxer_app/core/providers/database_provider.dart';
@@ -187,9 +188,11 @@ class AppStartup extends _$AppStartup {
       ..read(friendRelationshipsSyncProvider)
       ..read(guildListSyncProvider)
       ..read(statusExpiryBindingProvider)
-      ..read(premiumStateSyncBindingProvider);
+      ..read(premiumStateSyncBindingProvider)
+      ..read(shareHandlerProvider);
 
     ref.read(deepLinkHandlerProvider.notifier).processPendingDeepLink();
+    await ref.read(shareHandlerProvider.notifier).processPendingShare();
     ref.read(pendingPushNotificationPathProvider.notifier).flushIfReady();
 
     debugPrint(

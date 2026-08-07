@@ -43,6 +43,7 @@ import 'package:fluxer_app/features/settings/presentation/pages/guild/settings_i
 import 'package:fluxer_app/features/settings/presentation/pages/guild/settings_moderation_page.dart';
 import 'package:fluxer_app/features/settings/presentation/pages/guild/settings_overview_page.dart';
 import 'package:fluxer_app/features/settings/presentation/pages/guild/settings_roles_page.dart';
+import 'package:fluxer_app/features/share/presentation/share_screen.dart';
 import 'package:fluxer_app/features/shell/presentation/app_layout.dart';
 import 'package:fluxer_app/features/shell/presentation/invalid_deep_link_screen.dart';
 import 'package:fluxer_app/features/shell/presentation/reconnecting_screen.dart';
@@ -292,6 +293,16 @@ GoRouter fluxerRouter(Ref ref) {
         name: RouteNames.themePreview,
         // TODO(M0n7y5): show theme preview.
         redirect: (context, state) => RoutePaths.me,
+      ),
+      GoRoute(
+        path: '/share',
+        name: RouteNames.share,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) => shellMobileRootPushTransitionPage(
+          context: context,
+          key: state.pageKey,
+          child: const ShareScreen(),
+        ),
       ),
 
       // Guild settings (pushed on root navigator)
